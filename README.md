@@ -2,7 +2,7 @@
 
 VC3D could grow and display a new surface on PHerc. 800, but could not export it as TIFXYZ. The same export worked on surfaces that had first been imported from TIFXYZ. The [patch](patches/native-surface-tifxyz-export.patch) fixes that difference and adds a regression test for creating, exporting and reimporting a native surface.
 
-TIFXYZ is a handoff format in the [Vesuvius Challenge unwrapping workflow](https://scrollprize.org/tutorial1). A usable export lets downstream tools render or flatten a surface grown in VC3D and lets another operator inspect that same surface. The patch changes export metadata handling. It does not change the GrowPatch algorithm, the quality of the trace, or ink detection.
+TIFXYZ is a handoff format in the [Vesuvius Challenge unwrapping workflow](https://scrollprize.org/tutorial_VC3D). A usable export lets downstream tools render or flatten a surface grown in VC3D and lets another operator inspect that same surface. The patch changes export metadata handling. It does not change the GrowPatch algorithm, the quality of the trace, or ink detection.
 
 ## Cause and fix
 
