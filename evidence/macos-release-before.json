@@ -1,0 +1,8 @@
+{
+  "uuid": "ba33b7b1-5462-4dcc-ac43-f0c92c5f834b",
+  "jobId": "job-11",
+  "kind": "objects.export",
+  "state": "failed",
+  "message": "[json.exception.type_error.307] cannot use erase() with string",
+  "files": []
+}

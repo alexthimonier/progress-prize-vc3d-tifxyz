@@ -1,0 +1,80 @@
+diff --git a/vc_object_store/include/vc_object_store/objects/GeometryCoordinates.hpp b/vc_object_store/include/vc_object_store/objects/GeometryCoordinates.hpp
+index 68815e5..6ae2ee8 100644
+--- a/vc_object_store/include/vc_object_store/objects/GeometryCoordinates.hpp
++++ b/vc_object_store/include/vc_object_store/objects/GeometryCoordinates.hpp
+@@ -103,6 +103,8 @@ inline void eraseSourceGeometryCoordinates(CoordinateJson& source)
+ inline CoordinateJson geometryTransferMetadata(const CoordinateJson& metadata)
+ {
+     auto source = metadata.value("source", CoordinateJson::object());
++    // Native producers may store a tool label where importers store source metadata.
++    if (!source.is_object()) source = CoordinateJson{{"source", source}};
+     eraseSourceGeometryCoordinates(source);
+     source.erase("coordinate_binding");
+     source["coordinates"] = geometryCoordinates(metadata.value("coordinates", CoordinateJson::object()));
+diff --git a/vc_object_store/tests/cpp/test_json_boundaries.cpp b/vc_object_store/tests/cpp/test_json_boundaries.cpp
+index 185ea66..5424b01 100644
+--- a/vc_object_store/tests/cpp/test_json_boundaries.cpp
++++ b/vc_object_store/tests/cpp/test_json_boundaries.cpp
+@@ -14,6 +14,7 @@
+ #include "vc_object_store/geometry/Geometry.hpp"
+ #ifdef VC_TEST_NATIVE_FORMATS
+ #include "vc_object_store/objects/CatalogStore.hpp"
++#include "vc_object_store/objects/GeometryExport.hpp"
+ #endif
+ #include <fstream>
+ #include <iostream>
+@@ -162,6 +163,44 @@ void persistedAndTopologyBoundaries(const std::filesystem::path& root)
+     require(anchor.points.empty(), "valid empty anchor points");
+ }
+ 
++#ifdef VC_TEST_NATIVE_FORMATS
++void nativeSurfaceExport(const std::filesystem::path& root)
++{
++    OpenOptions options; options.author = "test";
++    auto store = ObjectStore::create(root / "native-surface.vcobj", options);
++    const Json coordinates{{"volume_uuid", "test-volume"}, {"scale_factor", 1}};
++    const vc::geometry::Surface surface{2, 2, {0.05f, 0.05f},
++        {{1, 2, 3}, {21, 2, 3}, {1, 22, 3}, {21, 22, 3}}};
++    std::string uuid;
++    {
++        auto write = store.write();
++        ObjectRecord record;
++        record.kind = "surface";
++        record.meta = Json{{"source", "vc_grow_seg_from_seed"}, {"coordinates", coordinates}}.dump();
++        uuid = store.upsertObject(write, record);
++        store.putGeometry(write, uuid, vc::geometry::encode(surface));
++        write.commit();
++    }
++    const auto output = root / "native-surface";
++    exportGeometry(store, uuid, output);
++    std::ifstream file(output / "meta.json");
++    const auto metadata = Json::parse(file);
++    require(metadata.at("source") == "vc_grow_seg_from_seed", "export preserves the native source label");
++    require(metadata.at("coordinates") == coordinates, "export preserves the declared volume and scale");
++    auto reimported = ObjectStore::create(root / "native-surface-round-trip.vcobj", options);
++    const auto report = ingestGeometrySource(reimported, "surface", output);
++    require(report.ingested == 1 && report.problems.empty(), "native surface export reimports");
++    auto originalRead = store.read();
++    auto importedRead = reimported.read();
++    const auto original = store.currentGeometry(originalRead, uuid);
++    const auto imported = reimported.currentGeometry(importedRead, uuid);
++    require(original && imported, "both surface geometries exist");
++    require(store.readGeometryArray(originalRead, original->uuid, "points") ==
++            reimported.readGeometryArray(importedRead, imported->uuid, "points"),
++            "native surface export round-trips exact coordinates");
++}
++#endif
++
+ void packedDirectoryBoundary(const std::filesystem::path& root)
+ {
+     const auto path=root/"packed.vcobj";
+@@ -199,6 +238,9 @@ int main() try
+     TemporaryDirectory dir;
+     persistedAndTopologyBoundaries(dir.path);
+     packedDirectoryBoundary(dir.path);
++#ifdef VC_TEST_NATIVE_FORMATS
++    nativeSurfaceExport(dir.path);
++#endif
+     for (auto history : {HistoryMode::Off, HistoryMode::On}) {
+         OpenOptions options; options.author = "test"; options.history = history;
+         auto store = ObjectStore::create(dir.path / (history == HistoryMode::On ? "on.vcobj" : "off.vcobj"), options);

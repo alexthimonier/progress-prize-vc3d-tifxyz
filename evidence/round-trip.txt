@@ -1,0 +1,3 @@
+points: 3888 bytes identical
+generations: 648 bytes identical
+Volume binding {'scale_factor': 1.0, 'volume_uuid': '20250521135224'}; grid scale [0.05000000074505806, 0.05000000074505806]; provenance vc_grow_seg_from_seed

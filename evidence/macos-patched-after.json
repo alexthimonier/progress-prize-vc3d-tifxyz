@@ -1,0 +1,14 @@
+{
+  "uuid": "ba33b7b1-5462-4dcc-ac43-f0c92c5f834b",
+  "jobId": "job-1",
+  "kind": "objects.export",
+  "state": "succeeded",
+  "message": "Exported ba33b7b1-5462-4dcc-ac43-f0c92c5f834b",
+  "files": [
+    "generations.tif",
+    "meta.json",
+    "x.tif",
+    "y.tif",
+    "z.tif"
+  ]
+}

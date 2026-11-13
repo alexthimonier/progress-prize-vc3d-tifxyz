@@ -1,0 +1,3 @@
+*.vcobj*
+*.vcproj
+__pycache__/

@@ -1,0 +1,11 @@
+diff --git a/vc_reader/src/cpp/publication.cpp b/vc_reader/src/cpp/publication.cpp
+index db8dfae..183f770 100644
+--- a/vc_reader/src/cpp/publication.cpp
++++ b/vc_reader/src/cpp/publication.cpp
+@@ -1,5 +1,6 @@
+ #include "vc_reader/publication.hpp"
+ #include <algorithm>
++#include <exception>
+ #include <fstream>
+ #include <set>
+ #include <vector>
